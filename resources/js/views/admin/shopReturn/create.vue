@@ -1,15 +1,11 @@
 <template>
   <create-form @onSubmit='submit'>
     <div class='row align-items-center'>
-        <!-- <Input v-model='data.orderNo' field='data.orderNo' title='OrderNo' :req='true' />
-				<date-picker id='date1' field='data.date' name='date'  v-model='data.date' title='Date' placeholder='Date' :req='true' col='2' ></date-picker> -->
-        <Input v-model='data.customer_mobile' field='data.customer_mobile' title='Customer mobile' :req='true' />
-
-        <div class="input-group">
+      <div class="input-group">
           <div class="form-outline">
-            <input type="search" id="form1" @keyup.enter="onPressEnter" v-model="data.productId" placeholder="scan or type product id" class="form-control" />
+            <input type="search" id="form1" v-model="data.orderNo" placeholder="Order No" class="form-control" />
           </div>
-          <button type="button" class="btn btn-primary" @click="onPressEnter">
+          <button type="button" class="btn btn-primary" @click="getOrder">
             <i class="fas fa-search"></i>
           </button>
         </div>
@@ -34,15 +30,17 @@
               <td>{{ item.shop_price }}</td>
               <td><input type="number" v-model="item.quantity" @keyup="calgrandTotal"></td>
               <td>{{ item.quantity * item.shop_price }}</td>
+              <td>
+                <i class="far fa-trash-alt" @click="deleteItem(index, item)"></i>
+              </td>
             </tr>
             <tr v-if="data.products.length > 0" style="background-color:blanchedalmond">
               <td colspan="5" align="right">Total: </td>
-              <td>{{ grandTotal ?? data.products.reduce((a, b) => a + (b.shop_price * b.quantity, 0)) }}</td>
+              <td colspan="2">{{ grandTotal }}</td>
             </tr>
            
           </tbody>
         </table>
-
 
     </div>
     <Button title='Submit' process='' />
@@ -53,7 +51,7 @@
 
 
 // define model name
-const model = 'shopSale';
+const model = 'shopReturn';
 
 export default {
   
@@ -61,10 +59,10 @@ export default {
     return {
       model: model,
       data: {
-        productId: null,
         products: [],
+        orderNo: null
       },
-      grandTotal : 0
+      grandTotal: 0
     };
   },
 
@@ -89,7 +87,8 @@ export default {
 
         // If there is no error
         if (res) {
-          this.data.grandTotal = this.grandTotal;
+          
+          
           if (this.data.id) {
             this.update(this.model, this.data, this.data.id,);
           } else {
@@ -99,26 +98,48 @@ export default {
       });
     },
 
-    onPressEnter() {
-      var productId = this.data.productId;
-      axios.post('get-product-by-id', {productId}).then(res => {
-        this.data.products.unshift(res.data);
-
-        this.data.productId = ''
-        console.log(res);
+    getOrder() {
+      var orderNo = this.data.orderNo;
+      axios.post('get-order-by-orderno', {orderNo}).then(res => {
+        this.data.products = res.data.products 
+        
+        var sum = 0;
+        for (let index = 0; index < this.data.products.length; index++) {
+          const element = this.data.products[index];
+          console.log(element);
+          sum += element.shop_price * element.quantity;
+        }
+        this.grandTotal = sum
       })
+
+      this.calgrandTotal()
     },
 
     calgrandTotal(){
-      this.grandTotal = this.data.products.reduce(function (previousValue = 0, currentValue = res.data) {
-                  return previousValue + currentValue.quantity * currentValue.shop_price;
-                }, 0);
-    }
+      
+      // let sum = this.data.products.reduce(function (previousValue, currentValue) {
+      //     return previousValue + (currentValue.quantity * currentValue.shop_price);
+      // });
+      var sum = 0;
+      for (let index = 0; index < this.data.products.length; index++) {
+        const element = this.data.products[index];
+        console.log(element);
+        sum += element.shop_price * element.quantity;
+      }
+      this.grandTotal = sum
+    },
+
+    deleteItem(index, item) {
+      var idx = this.data.products.indexOf(item);
+      console.log(idx, index);
+      if (idx > -1) {
+        this.data.products.splice(idx, 1);
+      }
+      this.calgrandTotal()
+    },
   },
   created() {
     if (this.$route.params.id) {
-      console.log('sdv');
-
       this.setBreadcrumbs(this.model, 'edit');
       this.get_data(`${this.model}/${this.$route.params.id}`);
     } else {
@@ -128,9 +149,8 @@ export default {
 
  // validation rule for form
   validators: {
-    // 'data.orderNo': function (value = null) { return Validator.value(value).required('OrderNo is required');},
-		// 'data.date': function (value = null) { return Validator.value(value).required('Date is required');},
-
+    // 'data.shop_sale_id': function (value = null) { return Validator.value(value).required('Shop sale id is required');},
+		
   },
 }
 

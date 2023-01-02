@@ -77,10 +77,13 @@ Route::group( ['middleware' => 'auth:admin'], function () {
         Route::resource('shopProduct', App\Http\Controllers\Admin\ShopProductController::class);
         Route::resource('shopInventory', App\Http\Controllers\Admin\ShopInventoryController::class);
         Route::resource('shopSale', App\Http\Controllers\Admin\ShopSaleController::class);
+        Route::resource('shopReturn', App\Http\Controllers\Admin\ShopReturnController::class);
     } );
 
     Route::Post('get-product-by-id', [App\Http\Controllers\Admin\ShopProductController::class, 'getProductById'])->name('all.product');
+    Route::Post('get-order-by-orderno', [App\Http\Controllers\Admin\ShopSaleController::class, 'getProductByOrderNo'])->name('all.product');
 
-    Route::get('all-products', [App\Http\Controllers\Admin\ShopProductController::class, 'allProduct'])->name('all.product');
+    Route::get('all-products', [App\Http\Controllers\Admin\ShopProductController::class, 'allProduct']);
+    Route::get('product-barcode', [App\Http\Controllers\Admin\ShopProductController::class, 'productBarcode']);
 
 } );

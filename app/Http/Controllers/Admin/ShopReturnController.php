@@ -8,15 +8,16 @@ namespace App\Http\Controllers\Admin;
 
 use Storage;
 use Exception;
+use App\Models\Product;
 use App\Models\ShopSale;
-use App\Models\ShopProduct;
-use App\Models\ShopSaleItem;
+use App\Models\ShopReturn;
 use Illuminate\Http\Request;
+use App\Models\ShopReturnItem;
 use App\Http\Resources\Resource;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Base\BaseController;
 
-class ShopSaleController extends BaseController
+class ShopReturnController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -25,17 +26,13 @@ class ShopSaleController extends BaseController
      */
     public function index(Request $request)
     {   
-        $query  = ShopSale::latest();
+        $query  = ShopReturn::join('shop_sales', 'shop_sales.id', '=', 'shop_returns.shop_sale_id');
         $query->whereLike( $request->field_name, $request->value );
-        $datas  = $query->paginate($request->pagination);
-        return new Resource($datas);
-    }
 
-    public function getProductByOrderNo(Request $request)
-    {
-        $orderNo = $request->orderNo;
-        $order = ShopSale::with('products')->where('order_no', $orderNo)->first();
-        return $order;
+        $datas  = $query
+                        // ->select('order_no', 'customer_mobile', DB::select(''))
+                        ->paginate($request->pagination);
+        return new Resource($datas);
     }
 
     /**
@@ -55,78 +52,64 @@ class ShopSaleController extends BaseController
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {   
+    {
         if ($this->validateCheck($request)) {
             try {
                 $data = $request->all();
                 // push the insert text
-                // $res = ShopSale::create($data); 
-                $sale = $this->createSale($request);
-                $this->createSaleItem($request, $sale->id);
-                return $this->responseReturn( "create", $sale );
+                // $res = ShopReturn::create($data); 
+                $res = $this->createReturn($request);
+                return $this->responseReturn( "create", $res );
             } catch (Exception $ex) {
                 return response()->json( ['exception' => $ex->errorInfo ?? $ex->getMessage()], 422 );
             }
         }
     }
 
-    public function createSale($request)
-    {
-        $sale = new ShopSale();
-        $sale->order_no = self::orderNoGen();
-        $sale->date = date('Y-m-d');
-        $sale->customer_mobile = $request->customer_mobile;
-        $sale->save();
-        return $sale;
-    }
+    public function createReturn($request)
+    {   
+        $sale = ShopSale::where('order_no', $request->orderNo)->first();
 
-    public function orderNoGen()
-    {
-        $order = ShopSale::latest()->first();
-        $lastOrderId = $order != null ? $order->id : 1;
-        $lastOrderId = $lastOrderId == 1 ? $lastOrderId : $lastOrderId + 1;
-        return ShopSale::ORDERNO_PREFIX .'-'.date('Y-m-d').'-'.$lastOrderId;
-    }
+        $shopReturn = new ShopReturn();
+        $shopReturn->shop_sale_id = $sale->id;
+        $shopReturn->date = date('Y-m-d');
+        $shopReturn->save();
 
-    public function createSaleItem($request, $saleId)
-    {
-        foreach ($request->products as $key => $value) {
-            $product = ShopProduct::find($value['id']);
-
-            if ($product != null) {
-                $item = new ShopSaleItem();
-                $item->shop_sale_id = $saleId;
-                $item->productId = $product->id;
-                $item->quantity = $value['quantity'];
-                $item->price = $product->shop_price;
-                $item->total = $product->shop_price * $value['quantity'];
-                $item->save();
-            }
-            
+        foreach ($request->products as $key => $item) {
+            $product = Product::find($item['id']);
+            $newItem = new ShopReturnItem();
+            $newItem->productId = $product->id;
+            $newItem->quantity = $item['quantity'];
+            $newItem->shop_return_id = $shopReturn->id;
+            $newItem->price = $product->shop_price;
+            $newItem->total = $product->shop_price * $item['quantity'];
+            $newItem->save();
         }
+
+        return 1;
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\ShopSale  $shopSale
+     * @param  \App\Models\ShopReturn  $shopReturn
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, ShopSale $shopSale)
+    public function show(Request $request, ShopReturn $shopReturn)
     {
         if ($request->format() == 'html') {
             return view('layouts.backend_app');
         }
-        return ShopSale::with('products')->find($shopSale->id);
+        return $shopReturn;
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\ShopSale  $shopSale
+     * @param  \App\Models\ShopReturn  $shopReturn
      * @return \Illuminate\Http\Response
      */
-    public function edit(ShopSale $shopSale)
+    public function edit(ShopReturn $shopReturn)
     {
         return view('layouts.backend_app');
     }
@@ -135,18 +118,18 @@ class ShopSaleController extends BaseController
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ShopSale  $shopSale
+     * @param  \App\Models\ShopReturn  $shopReturn
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ShopSale $shopSale)
+    public function update(Request $request, ShopReturn $shopReturn)
     {
-        if ($this->validateCheck($request, $shopSale->id)) {
+        if ($this->validateCheck($request, $shopReturn->id)) {
             try {
                 $data = $request->all();
                 // push the update text
-                $shopSale->fill( $data )->save();
+                $shopReturn->fill( $data )->save();
 
-                return $this->responseReturn( "update", $shopSale );
+                return $this->responseReturn( "update", $shopReturn );
             } catch (Exception $ex) {
                 return response()->json( ['exception' => $ex->errorInfo ?? $ex->getMessage()], 422 );
             }
@@ -156,12 +139,12 @@ class ShopSaleController extends BaseController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\ShopSale  $shopSale
+     * @param  \App\Models\ShopReturn  $shopReturn
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ShopSale $shopSale)
+    public function destroy(ShopReturn $shopReturn)
     {
-        $res = $shopSale->delete();
+        $res = $shopReturn->delete();
         return $this->responseReturn( "delete", $res );
     }
 

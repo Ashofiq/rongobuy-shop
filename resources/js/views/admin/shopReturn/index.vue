@@ -4,16 +4,14 @@
 
 <script>
 // define model name
-const model = "shopSale";
+const model = "shopReturn";
 
 // define table coloumn show in datatable / datalist
-const tableColumns = [{ field: "order_no", title: "OrderNo"},
-{ field: "customer_mobile", title: "Customer Mobile"},
-{ field: "date", title: "Date"},];
+const tableColumns = [{ field: "order_no", title: "OrderNo"},{ field: "date", title: "Date"},];
 
 //json fields for export excel
 const json_fields = {
-  "OrderNo": "orderNo","Date": "date",
+  "Date": "date",
 };
 
 export default {
@@ -22,7 +20,7 @@ export default {
     return {
       model: model,
       json_fields: json_fields,
-      fields_name: { 0: "Select One", order_no: "Order No", customer_mobile: "Customer Mobile" },
+      fields_name: { 0: "Select One", title: "Title" },
       search_data: {
         pagination: 10,
         field_name: 0,

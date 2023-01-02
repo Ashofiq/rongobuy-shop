@@ -8,18 +8,11 @@ namespace App\Models;
 
 use App\Models\Base\BaseModel;
 
-class ShopSale extends BaseModel
-{   
-    const ORDERNO_PREFIX = 'RNGB';
+class ShopReturn extends BaseModel
+{
     protected $guarded = ['id'];
     
-    protected $logName = "ShopSale";
-
-    public function products()
-    {
-        return $this->hasMany(ShopSaleItem::class, 'shop_sale_id')
-                ->join('product', 'product.id', '=', 'shop_sale_items.productId');
-    }
+    protected $logName = "ShopReturn";
 
     // file image push
 

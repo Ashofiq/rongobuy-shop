@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Admin;
 
 use Storage;
 use Exception;
+use App\Models\Product;
 use App\Models\ShopProduct;
 use Illuminate\Http\Request;
 use App\Http\Resources\Resource;
@@ -32,6 +33,14 @@ class ShopProductController extends BaseController
 
         $datas  = $query->paginate($request->pagination);
         return new Resource($datas);
+    }
+
+    public function productBarcode(Request $request)
+    {
+        $data['productId'] = $request->productId;
+        $data['barcode_qty'] = $request->barcode_qty;
+        $data['product'] = Product::find($request->productId);
+        return view('products.barcode', $data);
     }
 
     public function allProduct()

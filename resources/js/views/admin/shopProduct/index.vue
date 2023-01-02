@@ -1,5 +1,48 @@
 <template>
-  <index-page> </index-page>
+  <index-page>
+    <template v-slot:search-field>
+    <form method="get" :action="$root.baseurl + '/product-barcode'" target="_blank">
+      <div class="row col-5 pl-1">
+        <div class="col-lg-5">
+          <div class="form-element">
+            <select
+            name="productId"
+              class="form-select shadow-none"
+            >
+              <option
+                v-for="(item, index) in products"
+                :key="index"
+                v-bind:value="item.id"
+              >
+                {{ item.title }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="form-element">
+            <input
+              type="text"
+              name="barcode_qty"
+              class="form-control form-control-sm shadow-none"
+              placeholder="Type your text"
+            />
+          </div>
+        </div>
+        <div class="col-lg-1">
+          <button type="submit" class="search-btn">
+            <div class="btn-front">
+              Barcode
+            </div>
+            <div class="btn-back">
+              Barcode
+            </div>
+          </button>
+        </div>
+      </div>
+    </form>
+    </template>  
+  </index-page>
 </template>
 
 <script>
@@ -36,7 +79,8 @@ export default {
         datas: [],
         meta: [],
         links: []
-      }
+      },
+      products: []
     };
   },
 
@@ -56,12 +100,20 @@ export default {
     search() {
       this.get_paginate(this.model, this.search_data);
     },
+
+    getProduct(){
+      axios.get('all-products',{}).then(res => {
+        this.products = res.data
+      })
+    },
+
   },
 
   created() {
     this.getRouteName(this.model);
     this.setBreadcrumbs(this.model, "index");
     this.search();
+    this.getProduct();
   },
 };
 </script>

@@ -87,6 +87,11 @@ const routes = [{
         { path: '/shopSale/create', name: 'shopSale.create', component: () => import('./../views/admin/shopSale/create')},
         { path: '/shopSale/:id', name: 'shopSale.show', component: () => import('./../views/admin/shopSale/view')},
         { path: '/shopSale/:id/edit', name: 'shopSale.edit', component: () => import('./../views/admin/shopSale/create')},
+
+        { path: '/shopReturn', name: 'shopReturn.index', component: () => import('./../views/admin/shopReturn/index')},
+        { path: '/shopReturn/create', name: 'shopReturn.create', component: () => import('./../views/admin/shopReturn/create')},
+        { path: '/shopReturn/:id', name: 'shopReturn.show', component: () => import('./../views/admin/shopReturn/view')},
+        { path: '/shopReturn/:id/edit', name: 'shopReturn.edit', component: () => import('./../views/admin/shopReturn/create')},
     ],
 }]
 

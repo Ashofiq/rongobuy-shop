@@ -191,7 +191,7 @@
       <h6 class="full-brand">
         Developed By-
         <a
-          href="https://www.nogorsolutions.com/"
+          href="https://www.techbrain.com.bd/"
           target="_blank"
           class="d-block"
           >Techbrain.com.bd</a

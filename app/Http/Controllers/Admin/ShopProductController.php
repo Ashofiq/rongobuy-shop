@@ -27,9 +27,17 @@ class ShopProductController extends BaseController
     {   
         $query  = ShopProduct::with('brand')
         ->join('view_shop_item_stock', 'view_shop_item_stock.product_id', '=', 'product.id', 'left outer')
-        ->select('*', 'product.title as product_title', DB::raw('view_shop_item_stock.inventory_in - view_shop_item_stock.sale_qty as quantity'))
-        ->latest();
-        $query->whereLike( 'product.'.$request->field_name, $request->value );
+        ->join('brand', 'brand.id', '=', 'product.brand_id', 'left outer')
+        ->select('*', 'product.title as product_title', 'view_shop_item_stock.live_quantity as live_quantity');
+        // ->latest();
+        
+        if (isset($request->brand)) {
+            $query->where( 'product.brand_id', $request->brand );
+        }
+        if ($request->value != "") {
+            $query->whereLike( 'product.'.$request->field_name, $request->value );
+        }
+        
 
         $datas  = $query->paginate($request->pagination);
         return new Resource($datas);

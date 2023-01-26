@@ -2,7 +2,7 @@
   <create-form @onSubmit='submit'>
     <div class='row align-items-center'>
         
-          <v-select-container title="Role">
+          <v-select-container title="Product">
             <v-select
               v-model="data.product_id"
               label="title"
@@ -10,6 +10,18 @@
               :options="data.products"
               placeholder="--Select One--"
               :closeOnSelect="true"
+            ></v-select>
+          </v-select-container>
+
+          <v-select-container title="Varient">
+            <v-select
+              v-model="data.varient_id"
+              label="title"
+              :reduce="(obj) => obj.id"
+              :options="data.varients"
+              placeholder="--Select One--"
+              :closeOnSelect="true"
+              :req="true"
             ></v-select>
           </v-select-container>
 
@@ -31,7 +43,7 @@ export default {
   data() {
     return {
       model: model,
-      data: {products: []},
+      data: {products: [], varients: []},
       
     };
   },
@@ -59,7 +71,6 @@ export default {
         // If there is no error
         if (res) {
           
-          
           if (this.data.id) {
             this.update(this.model, this.data, this.data.id,);
           } else {
@@ -73,6 +84,11 @@ export default {
       axios.get('all-products',{}).then(res => {
         this.data.products = res.data
       })
+    },
+    getVarient(){
+      axios.get('all-varients',{}).then(res => {
+        this.data.varients = res.data
+      })
     }
   },
   created() {
@@ -84,12 +100,14 @@ export default {
     }
 
     this.getProduct();
+    this.getVarient();
   },
 
  // validation rule for form
   validators: {
     'data.product_id': function (value = null) { return Validator.value(value).required('Product id is required');},
 		'data.quantity': function (value = null) { return Validator.value(value).required('Quantity is required');},
+    'data.varient_id': function (value = null) { return Validator.value(value).required('Varient is required');},
 
   },
 }

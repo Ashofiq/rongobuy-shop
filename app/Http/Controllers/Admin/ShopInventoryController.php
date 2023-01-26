@@ -24,11 +24,24 @@ class ShopInventoryController extends BaseController
      */
     public function index(Request $request)
     {   
-        $query  = ShopInventory::with('product')
-            ->join('view_shop_item_stock', 'view_shop_item_stock.product_id', '=', 'shop_inventories.product_id')
-            ->select('*', DB::raw('view_shop_item_stock.inventory_in - view_shop_item_stock.sale_qty as quantity'))
-            ->latest();
-        $query->whereLike( $request->field_name, $request->value );
+        $query  = ShopInventory::with('product', 'varient')
+            ->join('view_shop_item_stock', 'view_shop_item_stock.product_id', '=', 'shop_inventories.product_id', 'left outer')
+            ->join('product', 'product.id', '=', 'shop_inventories.product_id', 'left outer')
+            ->join('brand', 'brand.id', '=', 'product.brand_id', 'left outer')
+            ->select('*');
+
+        if (isset($request->brand)) {
+            $query->where( 'product.brand_id', $request->brand );
+        }
+
+        if (isset($request->varient)) {
+            $query->where( 'shop_inventories.varient_id', $request->varient );
+        }
+
+        if ($request->value != "") {
+            $query->whereLike( $request->field_name, $request->value );
+        }
+        // $query->whereLike( $request->field_name, $request->value );
 
         $datas  = $query->paginate($request->pagination);
         return new Resource($datas);
@@ -42,6 +55,11 @@ class ShopInventoryController extends BaseController
     public function create()
     {
         return view('layouts.backend_app');
+    }
+
+    public function allVarients()
+    {
+        return DB::table('variant')->get();
     }
 
     /**

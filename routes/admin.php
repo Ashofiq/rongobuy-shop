@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Brand;
 use Illuminate\Support\Facades\Route;
 
 Route::group( ['middleware' => 'auth:admin'], function () {
@@ -84,6 +85,11 @@ Route::group( ['middleware' => 'auth:admin'], function () {
     Route::Post('get-order-by-orderno', [App\Http\Controllers\Admin\ShopSaleController::class, 'getProductByOrderNo'])->name('all.product');
 
     Route::get('all-products', [App\Http\Controllers\Admin\ShopProductController::class, 'allProduct']);
+    Route::get('all-varients', [App\Http\Controllers\Admin\ShopInventoryController::class, 'allVarients']);
+    Route::get('all-brand', function(){
+        return Brand::get();
+    });
+
     Route::get('product-barcode', [App\Http\Controllers\Admin\ShopProductController::class, 'productBarcode']);
 
 } );

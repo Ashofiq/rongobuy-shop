@@ -4,6 +4,7 @@
         <Input v-model='data.title' field='data.title' title='Name' :req='true' />
 				<Input v-model='data.description' field='data.description' title='Description' :req='true' />
         <Input v-model='data.shop_price' field='data.shop_price' title='Price' :req='true' />
+        <Input v-model='data.rak' field='data.rak' title='Rak' />
 
     </div>
     <Button title='Submit' process='' />

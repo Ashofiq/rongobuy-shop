@@ -1,5 +1,44 @@
 <template>
-  <index-page> </index-page>
+  <index-page> 
+    <template v-slot:search-field>
+      <!-- search  -->
+      <div class="col-md-2">
+        <div class="form-element">
+          <select
+            name="productId"
+            class="form-select shadow-none"
+            v-model="search_data.brand"
+          >
+            <option
+              v-for="(brand, index) in brands"
+              :key="index"
+              v-bind:value="brand.id"
+            >
+              {{ brand.title }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <div class="form-element">
+          <select
+          name="productId"
+            class="form-select shadow-none"
+            v-model="search_data.varient"
+          >
+            <option
+              v-for="(item, index) in varients"
+              :key="index"
+              v-bind:value="item.id"
+            >
+              {{ item.title }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </template>
+  </index-page>
 </template>
 
 <script>
@@ -9,6 +48,8 @@ const model = "shopInventory";
 // define table coloumn show in datatable / datalist
 const tableColumns = [{ field: "product_id", subfield:"product.title", title: "Product_id"},
 { field: "quantity", title: "Quantity"},
+{ field: "live_quantity", title: "Live Quantity"},
+{ field: "varient_id", subfield:"varient.title", title: "Varient"},
 { field: "created_at", title: "Created at", align: "center", date: true },
 
 ];
@@ -28,7 +69,9 @@ export default {
       search_data: {
         pagination: 10,
         field_name: 0,
-        value: ""
+        value: "",
+        varient: null,
+        brand: null
       },
       table: {
         columns: tableColumns,
@@ -36,7 +79,9 @@ export default {
         datas: [],
         meta: [],
         links: []
-      }
+      },
+      varients:[],
+      brands: []
     };
   },
 
@@ -56,12 +101,29 @@ export default {
     search() {
       this.get_paginate(this.model, this.search_data);
     },
+
+    
+    getVarient(){
+      axios.get('all-varients',{}).then(res => {
+        this.varients = res.data
+      })
+    },
+
+    getBrand(){
+      axios.get('all-brand',{}).then(res => {
+        
+        this.brands = res.data
+        console.log('brand', this.brands);
+      })
+    }
   },
 
   created() {
     this.getRouteName(this.model);
     this.setBreadcrumbs(this.model, "index");
     this.search();
+    this.getVarient();
+    this.getBrand();
   },
 };
 </script>

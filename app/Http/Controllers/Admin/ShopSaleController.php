@@ -63,7 +63,7 @@ class ShopSaleController extends BaseController
                 // $res = ShopSale::create($data); 
                 $sale = $this->createSale($request);
                 $this->createSaleItem($request, $sale->id);
-                return $this->responseReturn( "create", $sale );
+                return response()->json( ['message' => "Save Successfully!", "data" => $sale], 201 );//$this->responseReturn( "create", $sale );
             } catch (Exception $ex) {
                 return response()->json( ['exception' => $ex->errorInfo ?? $ex->getMessage()], 422 );
             }
@@ -76,6 +76,10 @@ class ShopSaleController extends BaseController
         $sale->order_no = self::orderNoGen();
         $sale->date = date('Y-m-d');
         $sale->customer_mobile = $request->customer_mobile;
+        $sale->customer_name = $request->customer_name;
+        $sale->customer_address = $request->customer_address;
+        $sale->paid_amount = $request->paid_amount;
+        $sale->grandTotal = $request->grandTotal;
         $sale->save();
         return $sale;
     }
